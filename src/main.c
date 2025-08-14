@@ -5,37 +5,10 @@
 #include "ob/oh.h"
 #include "ob/obtree.h"
 #include "ev/ev.h"
+#include "ev/pipe.h"
 #include <dirent.h>
 #include <sys/stat.h>
 #include <stdlib.h>
-
-bool make_root_dir(){
-    if(!obtree_init()){
-        return false;
-    }
-    
-    if (!obtree_append(0, "/DEV")){
-        printf("DEV mounting failed!\n");
-        return false;
-    }
-
-    if (!obtree_append(0, "/IRD")){
-        printf("IRD mounting failed!\n");
-        return false;
-    }
-
-    if (!obtree_append(0, "/PRC")){
-        printf("PRC mounting failed!\n");
-        return false;
-    }
-
-    if (!obtree_append(0, "/REG")){
-        printf("REG mounting failed!\n");
-        return false;
-    }
-
-    return true;
-}
 
 
 //CHATGPT CODE
@@ -111,13 +84,38 @@ void walk_dir(const char *basepath, const char *treeprefix) {
 }
 //END OF CHATGPT CODE
 
-bool event_handler1(uintptr_t emitter_id, uintptr_t passed_value){
-    printf("event_handler1 called with emitter_id: %d, passed_value: %d\n", emitter_id, passed_value);
+bool make_root_dir(){
+    if(!obtree_init()){
+        return false;
+    }
+    
+    if (!obtree_append(0, "/DEV")){
+        printf("DEV mounting failed!\n");
+        return false;
+    }
+
+    if (!obtree_append(0, "/IRD")){
+        printf("IRD mounting failed!\n");
+        return false;
+    }
+
+    if (!obtree_append(0, "/PRC")){
+        printf("PRC mounting failed!\n");
+        return false;
+    }
+
+    if (!obtree_append(0, "/REG")){
+        printf("REG mounting failed!\n");
+        return false;
+    }
+
+    walk_dir("test", "/IRD");
+
     return true;
 }
 
-bool event_handler2(uintptr_t emitter_id, uintptr_t passed_value){
-    printf("event_handler2 called with emitter_id: %d, passed_value: %d\n", emitter_id, passed_value);
+bool uart_handler(uintptr_t emitter_id, uintptr_t passed_value){
+    printf("%s", (char*)passed_value);
     return true;
 }
 
@@ -130,25 +128,17 @@ int main() {
         printf("Root directory creation failed!\n");
         return 1;
     }
+
+    uintptr_t listener = ev_register_listener(0, uart_handler);
+    uintptr_t pipe = pipe_create(0, listener);
     
-    if(!obtree_append(0 /*TODO: streams*/,"/DEV/UART0")){
+    if(!obtree_append(pipe,"/DEV/UART0")){
         printf("UART0 mounting failed!\n");
         return 1;
     }
 
-    uintptr_t emitter_id = ev_register_emitter(0);
-
-    uintptr_t listener_id1 = ev_register_listener(emitter_id, event_handler1);
-    uintptr_t listener_id2 = ev_register_listener(emitter_id, event_handler2);
-
-    ev_subscribe(emitter_id, listener_id1);
-    ev_subscribe(emitter_id, listener_id2);
-
-    ev_emit(emitter_id, 42);
-    ev_emit(emitter_id, 69);
-    ev_emit(emitter_id, 420);
-
-    walk_dir("test", "/IRD");
+    uintptr_t test_emitter = ev_register_emitter(0);
+    pipe_write(pipe, (uintptr_t)"Hello via pipe_write!\n", 0);
 
     obtree_print();
     ob_print();

@@ -94,7 +94,19 @@ bool ob_print()
                 printf("   |-- Key: %lu\n", i->data.obtree_node.key);
                 printf("   \\-- Object: %lu\n", i->data.obtree_node.obj);
                 break;
-
+            case OBJ_TYPE_FILE:
+                printf("[%4lu] File\n", ((uintptr_t)i - (uintptr_t)object_space) / OB_SIZE);
+                break;
+            
+            case OBJ_TYPE_EVENT_EMITTER:
+                printf("[%4lu] Event emitter\n", ((uintptr_t)i - (uintptr_t)object_space) / OB_SIZE);
+                break;
+            case OBJ_TYPE_EVENT_LISTENER:
+                printf("[%4lu] Event listener\n", ((uintptr_t)i - (uintptr_t)object_space) / OB_SIZE);
+                break;
+            case OBJ_TYPE_UNIDIR_PIPE:
+                printf("[%4lu] Unidirectional pipe\n", ((uintptr_t)i - (uintptr_t)object_space) / OB_SIZE);
+                break;
 
             default:
                 printf("[%3lu] Object type %d\n", ((uintptr_t)i - (uintptr_t)object_space) / OB_SIZE, i->type);

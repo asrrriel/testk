@@ -6,12 +6,13 @@
 
 #define OB_SIZE 512
 
-#define OBJ_TYPE_SIMPLE_BUFFER  1
-#define OBJ_TYPE_SIMPLE_TYPE    2
-#define OBJ_TYPE_FILE           3
-#define OBJ_TYPE_OBTREE_NODE    4
-#define OBJ_TYPE_EVENT_EMITTER  5
-#define OBJ_TYPE_EVENT_LISTENER 6
+#define OBJ_TYPE_SIMPLE_BUFFER    1
+#define OBJ_TYPE_SIMPLE_TYPE      2
+#define OBJ_TYPE_FILE             3
+#define OBJ_TYPE_OBTREE_NODE      4
+#define OBJ_TYPE_EVENT_EMITTER    5
+#define OBJ_TYPE_EVENT_LISTENER   6
+#define OBJ_TYPE_UNIDIR_PIPE      7
 
 #define OB_SIMPLE_BUFFER_SIZE (OB_SIZE - (8 + sizeof(uintptr_t)))
 
@@ -49,6 +50,11 @@ typedef struct object {
             uintptr_t emitter_id;
             uintptr_t callback;
         } event_listener;
+        struct {
+            uintptr_t buffer;
+            uintptr_t owner;
+            uintptr_t event_listener;
+        } unidir_pipe;
     } data;
 } object_t;
 
