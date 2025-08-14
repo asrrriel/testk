@@ -4,6 +4,7 @@
 #include "ob/ob.h"
 #include "ob/oh.h"
 #include "ob/obtree.h"
+#include "ev/ev.h"
 #include <dirent.h>
 #include <sys/stat.h>
 #include <stdlib.h>
@@ -110,6 +111,16 @@ void walk_dir(const char *basepath, const char *treeprefix) {
 }
 //END OF CHATGPT CODE
 
+bool event_handler1(uintptr_t emitter_id, uintptr_t passed_value){
+    printf("event_handler1 called with emitter_id: %d, passed_value: %d\n", emitter_id, passed_value);
+    return true;
+}
+
+bool event_handler2(uintptr_t emitter_id, uintptr_t passed_value){
+    printf("event_handler2 called with emitter_id: %d, passed_value: %d\n", emitter_id, passed_value);
+    return true;
+}
+
 int main() {
     if (!ob_init()){
         printf("Ob initialization failed!\n");
@@ -124,6 +135,18 @@ int main() {
         printf("UART0 mounting failed!\n");
         return 1;
     }
+
+    uintptr_t emitter_id = ev_register_emitter(0);
+
+    uintptr_t listener_id1 = ev_register_listener(emitter_id, event_handler1);
+    uintptr_t listener_id2 = ev_register_listener(emitter_id, event_handler2);
+
+    ev_subscribe(emitter_id, listener_id1);
+    ev_subscribe(emitter_id, listener_id2);
+
+    ev_emit(emitter_id, 42);
+    ev_emit(emitter_id, 69);
+    ev_emit(emitter_id, 420);
 
     walk_dir("test", "/IRD");
 
